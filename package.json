@@ -25,8 +25,19 @@
   "scripts": {
     "start": "react-scripts start --no-cache",
     "build": "react-scripts build",
-    "test": "react-scripts test --no-cache",
+    "test": "react-scripts test --no-cache --watchAll",
+    "test:c": "react-scripts test --no-cache --coverage --watchAll",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/src/react-app-env.d.ts",
+      "!**/serviceWorker.ts",
+      "!**/index.tsx"
+    ]
   },
   "eslintConfig": {
     "extends": "react-app"
