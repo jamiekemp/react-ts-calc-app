@@ -9,8 +9,37 @@ export interface CalcProps {
   setValidity: Function;
 }
 
+// prettier-ignore
+const keyMap: Record<string, string> = {
+  Numpad0:        '0',
+  Numpad1:        '1',
+  Numpad2:        '2',
+  Numpad3:        '3',
+  Numpad4:        '4',
+  Numpad5:        '5',
+  Numpad6:        '6',
+  Numpad7:        '7',
+  Numpad8:        '8',
+  Numpad9:        '8',
+  NumpadAdd:      '+',
+  NumpadDivide:   '/',
+  NumpadMultiply: 'x',
+  NumpadSubtract: '-',
+  NumpadDecimal:  '.',
+  NumpadEnter:    '=',
+  NumpadEqual:    '=',
+  Backspace:      'Del',
+  Delete:         'Del',
+  Escape:         'Clear',
+  Enter:          '=',
+  '*':            'x'
+};
+
 const mathJs = create(all, { number: 'BigNumber' }) as MathJsStatic;
-const operations = ['-', '+', 'x', '/'];
+const minusPlus = ['-', '+'];
+const multiDivide = ['x', '/'];
+const operations = [...minusPlus, ...multiDivide];
+const regExOps = new RegExp(`[${operations.join()}]`, 'g');
 
 const resetCalc = (calcProps: CalcProps): void => {
   const { setCalc, setHistory } = calcProps;
@@ -23,14 +52,32 @@ const deleteFromCalc = (calcProps: CalcProps): void => {
   setCalc(calc.slice(0, -1));
 };
 
+const setHistoryAnswerCheckApply = (calcProps: CalcProps): void => {
+  const { calc, history, setHistory } = calcProps;
+  if (history.length && !history.includes('Ans') ) { setHistory('Ans = ' + calc);  } // prettier-ignore
+};
+
 const replaceMultiply = (calc: string): string => {
   return calc.replace(/x/g, '*');
 };
 
-const prefixZeroCheck = (calcProps: CalcProps): boolean => {
+const padOperations = (calc: string): string => {
+  return calc
+    .replace(regExOps, char => ` ${char} `)
+    .replace(/e\s\+\s/g, 'e+')
+    .replace(/\s\s-\s/g, ' -')
+    .replace(/^\s-\s/, '-');
+};
+
+const getLastFullNumber = (calc: string): string => {
+  if (calc.length === 1 ) { return calc; } // prettier-ignore
+  return calc.split(regExOps).reverse()[0];
+};
+
+const replaceZeroCheck = (calcProps: CalcProps): boolean => {
   const { calc, newInput } = calcProps;
-  if (newInput !== '.') { return false }
-  return !calc || operations.includes(calc.substr(-1));
+  if (newInput === '.') { return false; } // prettier-ignore
+  return calcCore.getLastFullNumber(calc) === '0' && Number.isInteger(+newInput);
 };
 
 const replaceOperatorCheck = (calcProps: CalcProps): boolean => {
@@ -40,11 +87,22 @@ const replaceOperatorCheck = (calcProps: CalcProps): boolean => {
   return [...operations, '.'].includes(lastInput);
 };
 
+const sliceLastInputCheck = (calcProps: CalcProps): boolean => {
+  return calcCore.replaceOperatorCheck(calcProps) || calcCore.replaceZeroCheck(calcProps);
+};
+
+const prefixZeroCheck = (calcProps: CalcProps): boolean => {
+  const { calc, newInput } = calcProps;
+  if (newInput !== '.') { return false }
+  return !calc || operations.includes(calc.substr(-1));
+};
+
 const addToCalc = (calcProps: CalcProps): void => {
   const { calc, setCalc, newInput } = calcProps;
   const newInputDecimalChecked = calcCore.prefixZeroCheck(calcProps) ? '0' + newInput : newInput;
-  const calcLastOperatorChecked = calcCore.replaceOperatorCheck(calcProps) ? calc.slice(0, -1)  : calc;
-  setCalc(calcLastOperatorChecked + newInputDecimalChecked);
+  const calcLastInputSliceChecked = calcCore.sliceLastInputCheck(calcProps) ? calc.slice(0, -1) : calc;
+  setCalc(calcLastInputSliceChecked + newInputDecimalChecked);
+  calcCore.setHistoryAnswerCheckApply(calcProps);
 };
 
 const toExponentialCheckApply = (result: number): string => {
@@ -114,9 +172,14 @@ const handleInput = (calcProps: CalcProps): boolean | void => {
 export const calcCore = {
   resetCalc,
   deleteFromCalc,
+  setHistoryAnswerCheckApply,
   replaceMultiply,
-  prefixZeroCheck,
+  padOperations,
+  getLastFullNumber,
+  replaceZeroCheck,
   replaceOperatorCheck,
+  sliceLastInputCheck,
+  prefixZeroCheck,
   addToCalc,
   toExponentialCheckApply,
   applyCalcResult,
@@ -124,7 +187,8 @@ export const calcCore = {
   invalidFlash,
   validCalculation,
   handleInput,
-  mathJs
+  mathJs,
+  keyMap
 };
 
 // Why self reference via calcCore between functions?
