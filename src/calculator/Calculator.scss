@@ -1,0 +1,132 @@
+@function rem-calc($size) {
+  $remSize: $size / 16;
+  @return #{$remSize}rem;
+}
+
+$blue-light: #1795d4; // prettier-ignore
+$blue-dark:  #196b98; // prettier-ignore
+$invalid:    #ec007c; // prettier-ignore
+$valid:      #11a69c; // prettier-ignore
+$white:      #ffffff; // prettier-ignore
+$grey:       #888888; // prettier-ignore
+
+.calculator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: rem-calc(350);
+}
+
+.calc-container {
+  display: grid;
+  grid-gap: rem-calc(1);
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: rem-calc(72) 1.3fr 1fr 1fr 1fr 1fr 1fr;
+  width: 100%;
+  margin: 2rem;
+  box-shadow: 0 rem-calc(5) rem-calc(30) 0 rgba(0, 0, 0, 0.2);
+
+  .branding {
+    grid-column: 1 / span 4;
+    grid-row: 1;
+    padding: 1rem;
+    overflow: hidden;
+    background-color: $blue-light;
+
+    .logo {
+      width: rem-calc(150);
+      height: rem-calc(40);
+    }
+  }
+
+  .display {
+    display: grid;
+    grid-column: 1 / span 4;
+    grid-row: 2;
+    grid-template-rows: 0.6fr 1fr;
+    padding: 1rem;
+    transition: border 150ms linear;
+    background-color: white;
+    font-family: 'Lato', sans-serif;
+    text-align: right;
+
+    &.valid {
+      border: 2px solid $white;
+    }
+
+    &.invalid {
+      border: rem-calc(2) solid $invalid;
+    }
+
+    .history {
+      padding-bottom: rem-calc(5);
+      color: $grey;
+      font-size: rem-calc(18);
+    }
+
+    .result {
+      overflow: hidden;
+      color: darken($valid, 2%);
+      font-size: rem-calc(45);
+      font-weight: 400;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      direction: rtl;
+
+      bdi span {
+        color: $grey;
+      }
+    }
+  }
+
+  button {
+    padding: 1rem;
+    transition: background-color 150ms linear;
+    border: 0 none;
+    outline: 0;
+    background-color: $blue-light;
+    color: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    text-align: center;
+
+    &:hover,
+    &:focus {
+      background-color: darken($blue-light, 5%);
+    }
+
+    &:active,
+    &.active {
+      background-color: $valid;
+    }
+
+    &.button-del {
+      grid-column: 1;
+      grid-row: 7;
+      font-size: rem-calc(25);
+      font-weight: 400;
+    }
+
+    &.button-clear {
+      grid-column: 2 / span 3;
+    }
+
+    &.button-del,
+    &.button-clear {
+      grid-row: 7;
+      background-color: $blue-dark;
+      font-weight: 400;
+
+      &:hover {
+        background-color: darken($blue-dark, 5%);
+      }
+
+      &:active,
+      &.active {
+        background-color: mix($blue-dark, $invalid, 60%);
+      }
+    }
+  }
+}
